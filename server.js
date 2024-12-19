@@ -51,7 +51,7 @@ app.get('/api/employeesnames', async (req, res) => {
   try {
     // Fetch only the employee names and exclude unnecessary fields
     const employees = await EmployeeModel.find({}, 'employeeName');
-    
+
     // Log the fetched data for debugging
     console.log('Fetched Employee Names:', employees);
 
@@ -62,7 +62,6 @@ app.get('/api/employeesnames', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
 
 // POST API to add a new employee
 app.post('/api/employees', async (req, res) => {
@@ -93,6 +92,32 @@ app.post('/api/employees', async (req, res) => {
     });
   } catch (error) {
     console.error('Error saving employee:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// DELETE API to remove an employee by ID
+app.delete('/api/employees/:id', async (req, res) => {
+  const { id } = req.params;
+
+  // Validate ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid ID format' });
+  }
+
+  try {
+    // Find and delete the employee
+    const deletedEmployee = await EmployeeModel.findByIdAndDelete(id);
+    if (!deletedEmployee) {
+      return res.status(404).json({ error: 'Employee not found' });
+    }
+
+    res.status(200).json({
+      message: 'Employee deleted successfully',
+      data: deletedEmployee,
+    });
+  } catch (error) {
+    console.error('Error deleting employee:', error.message);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
